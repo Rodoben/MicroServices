@@ -1,0 +1,20 @@
+syntax ="proto3";
+package CalculateSI;
+option go_package = "/CalculateSI";
+
+
+message CalculateSIRequest{
+    float principle =1;
+    float rate =2;
+    float time = 3;
+}
+
+message CalculateSIResponse{
+    float Si =1;
+    float tot =2;
+}
+
+service CalculateSIService{
+    rpc CalculateSiAndTotAmount(CalculateSIRequest) returns (CalculateSIResponse) {};
+    rpc CalculateSiAndTotAmountWithDeadline(CalculateSIRequest) returns (CalculateSIResponse) {};
+}

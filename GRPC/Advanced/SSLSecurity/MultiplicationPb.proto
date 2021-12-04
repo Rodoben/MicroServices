@@ -1,0 +1,16 @@
+syntax= "proto3";
+package MultiplicationPb;
+option go_package = "/MultiplicationPb";
+
+message MultiplicationRequest{
+    int32 num =1;
+}
+
+message MultiplicationResponse{
+    int32 Result = 1;
+}
+
+service MultiplicationService{
+    // server streaming with deadline
+    rpc MultiplicationTableWithDeadline(MultiplicationRequest) returns (stream MultiplicationResponse){};
+}

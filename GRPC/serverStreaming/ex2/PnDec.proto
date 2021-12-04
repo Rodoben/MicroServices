@@ -1,0 +1,16 @@
+syntax ="proto3";
+package PnDec;
+option go_package="/PnDec";
+
+
+message PnDecRequest{
+   int32 num =1;
+}
+message PnDecResponse{
+ int32 result =1;
+}
+
+
+service PnDecService{
+    rpc PnDec (PnDecRequest) returns ( stream PnDecResponse);
+}

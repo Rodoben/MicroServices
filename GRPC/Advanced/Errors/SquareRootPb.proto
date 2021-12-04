@@ -1,0 +1,18 @@
+syntax ="proto3";
+package SquareRoot;
+option go_package ="/SquareRoot";
+
+
+message SquareRootRequest{
+ float num = 1;
+}
+
+
+message SquareRootResponse{
+float Result =1;
+}
+
+
+service SquareRootService{
+    rpc SquareRoot(SquareRootRequest) returns (SquareRootResponse){};
+}

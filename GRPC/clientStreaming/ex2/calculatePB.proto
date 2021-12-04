@@ -1,0 +1,16 @@
+syntax ="proto3";
+package calcAvg;
+option go_package = "/CalcAvg";
+
+
+message calcAvgRequest{
+    float num = 1;
+}
+message calcAvgResponse{
+    float Result =1;
+}
+
+
+service CalculateService{
+    rpc CalcAvg(stream calcAvgRequest) returns (calcAvgResponse){};
+}

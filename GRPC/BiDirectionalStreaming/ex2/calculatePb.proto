@@ -1,0 +1,16 @@
+syntax = "proto3";
+package  calculatePb;
+option go_package = "/calculatePb";
+
+message calculateMaxRequest{
+    int32 num =1;
+}
+
+message calculateMaxResponse{
+    int32 Result = 1;
+}
+
+
+service CalculateMaxSevice{
+  rpc CalculateMaximun(stream calculateMaxRequest) returns (stream calculateMaxResponse){};
+}

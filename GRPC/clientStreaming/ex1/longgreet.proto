@@ -1,0 +1,16 @@
+syntax="proto3";
+package longGreet;
+option go_package="/longGreet";
+
+
+message longGreetRequest{
+    string first_name =1;
+}
+
+message longGreetResponse{
+    string Result =1;
+}
+
+service longGreetService{
+    rpc LongGreet(stream longGreetRequest) returns (longGreetResponse){};
+}

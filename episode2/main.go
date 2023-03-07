@@ -1,26 +1,30 @@
 package main
 
 import (
-	"net/http"
-	"log"
-	"os"
-	"handler/handler"
+	"episode2/handler"
 	"fmt"
-	
-	
-	
+	"log"
+	"net/http"
+	"os"
 )
 
-func main(){
-fmt.Println("server started")
+func main() {
+	fmt.Println("server started")
 
-l := log.New(os.Stdout,"product-api",log.LstdFlags)
+	l := log.New(os.Stdout, "product-api", log.LstdFlags)
+	fmt.Println("l:", l)
+	hh := handler.NewHello(l)
+	gg := handler.NewGoodBye(l)
+	fmt.Println("hh:", hh)
 
-hh := handler.NewHello(l)
+	sm := http.NewServeMux()
+	fmt.Println("sm:", sm)
+	sm.Handle("/", hh)
+	sm.Handle("/bye", gg)
 
+	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("hi log")
+	})
 
-   sm := http.NewServeMux()
-   sm.Handle("/",hh)
-
-	http.ListenAndServe(":9093",nil)
+	http.ListenAndServe(":9095", sm)
 }

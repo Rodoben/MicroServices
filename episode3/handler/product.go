@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"context"
 	"episode3/data"
 	"log"
 	"net/http"
-	"regexp"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type Product struct {
@@ -14,54 +16,6 @@ type Product struct {
 
 func NewProduct(l *log.Logger) *Product {
 	return &Product{l: l}
-}
-
-func (p *Product) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-
-	if req.Method == http.MethodGet {
-		p.GetProducts(rw, req)
-		return
-	}
-
-	if req.Method == http.MethodPost {
-		p.AddProduct(rw, req)
-		return
-	}
-
-	if req.Method == http.MethodPut {
-		p.l.Println("PUT:", req.URL.Path)
-
-		reg := regexp.MustCompile(`/([0-9]+)`)
-		p.l.Println(reg)
-		g := reg.FindAllStringSubmatch(req.URL.Path, -1)
-		p.l.Println(g)
-		p.l.Println(len(g))
-
-		if len(g) != 1 {
-			p.l.Println("Invalid URI more than one id")
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-		p.l.Println(len(g[0]))
-		if len(g[0]) != 2 {
-			p.l.Println("Invalid URI more than one capture group")
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		idString := g[0][1]
-		p.l.Println("id:", idString)
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			p.l.Println("Invalid URI unable to convert to numer", idString)
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-		p.UpdateProduct(id, rw, req)
-		return
-	}
-	rw.WriteHeader(http.StatusMethodNotAllowed)
-
 }
 
 func (p *Product) GetProducts(rw http.ResponseWriter, req *http.Request) {
@@ -78,25 +32,43 @@ func (p *Product) GetProducts(rw http.ResponseWriter, req *http.Request) {
 func (p *Product) AddProduct(rw http.ResponseWriter, req *http.Request) {
 	p.l.Println("Handle POSt Product")
 
-	prod := data.Product{}
-	err := prod.ConvertFromJson(req.Body)
-	if err != nil {
-		http.Error(rw, "Unable to decode the json", http.StatusBadRequest)
-	}
+	prod := req.Context().Value(keyProduct{}).(data.Product)
 
 	p.l.Println(prod)
 	data.AddProducts(&prod)
 }
 
-func (p *Product) UpdateProduct(id int, rw http.ResponseWriter, req *http.Request) {
+func (p *Product) UpdateProduct(rw http.ResponseWriter, req *http.Request) {
 	p.l.Println("Handle PUT Product")
-
-	prod := data.Product{}
-	err := prod.ConvertFromJson(req.Body)
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(rw, "Unable to decode the json", http.StatusBadRequest)
+		http.Error(rw, "Unable to convert id", http.StatusBadRequest)
+		return
 	}
-	p.l.Println(prod)
-	data.UpdateProduct(id, &prod)
 
+	prod := req.Context().Value(keyProduct{}).(data.Product)
+
+	p.l.Println(prod)
+	err = data.UpdateProduct(id, &prod)
+
+}
+
+type keyProduct struct{}
+
+func (p *Product) MiddlewareProductvalidation(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		prod := data.Product{}
+		err := prod.ConvertFromJson(r.Body)
+		if err != nil {
+			http.Error(w, "Unable to decode the json", http.StatusBadRequest)
+			return
+		}
+		p.l.Println("prod value:", prod)
+		ctx := context.WithValue(r.Context(), keyProduct{}, prod)
+		req := r.WithContext(ctx)
+
+		h.ServeHTTP(w, req)
+
+	})
 }
